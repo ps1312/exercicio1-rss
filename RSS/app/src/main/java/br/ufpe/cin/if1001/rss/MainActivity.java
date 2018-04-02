@@ -1,21 +1,36 @@
 package br.ufpe.cin.if1001.rss;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
     //ao fazer envio da resolucao, use este link no seu codigo!
-    private final String RSS_FEED = "http://leopoldomt.com/if1001/g1brasil.xml";
+    //private final String RSS_FEED = "http://leopoldomt.com/if1001/g1brasil.xml";
 
     //OUTROS LINKS PARA TESTAR...
     //http://rss.cnn.com/rss/edition.rss
@@ -24,7 +39,12 @@ public class MainActivity extends Activity {
     //http://pox.globo.com/rss/g1/tecnologia/
 
     //use ListView ao invés de TextView - deixe o atributo com o mesmo nome
-    private TextView conteudoRSS;
+    private ListView conteudoRSS;
+    private List<ItemRSS> parsedResponse;
+    private SharedPreferences sharedPref;
+
+    // Usado no parse simples
+    //private List<String> parsedResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +52,63 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         //use ListView ao invés de TextView - deixe o ID no layout XML com o mesmo nome conteudoRSS
         //isso vai exigir o processamento do XML baixado da internet usando o ParserRSS
-        conteudoRSS = (TextView) findViewById(R.id.conteudoRSS);
+
+        //No primeiro uso da aplicacao o valor de rssfeed padrao eh carregado
+        PreferenceManager.setDefaultValues(this, R.xml.preferencias, false);
+
+        //Load nas preferences
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
+
+        //Se o user pressionar alguma news..
+        conteudoRSS.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                Se quiser abrir no browser externo
+//
+//                Intent seeOnBrowser = new Intent(Intent.ACTION_VIEW);
+//                ItemRSS item = (ItemRSS) conteudoRSS.getItemAtPosition(i);
+//                Uri itemUrl = Uri.parse(item.getLink());
+//                seeOnBrowser.setData(itemUrl);
+//                if (seeOnBrowser.resolveActivity(getPackageManager()) != null) {
+//                    startActivity(seeOnBrowser);
+//                }
+//
+//              O app vai usar webview
+                Intent seeOnWebview = new Intent(getApplicationContext(), WebviewActivity.class);
+                ItemRSS item = (ItemRSS) conteudoRSS.getItemAtPosition(i);
+                seeOnWebview.putExtra("url", item.getLink());
+                if (seeOnWebview.resolveActivity(getPackageManager()) != null) {
+                    startActivity(seeOnWebview);
+                }
+            }
+        });
+    }
+
+    //Menu na action bar para mudança de url do feed
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.action_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //Se a opcao escolhida for para mudar o feed (unica opcao atualmente)
+        if (item.getItemId() == R.id.change_settings) {
+            startActivity(new Intent(getApplicationContext(), PreferenciasActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        //Pegar a string com a key rssfeed na sharedpreference e executa a asynctask
+        String RSS_FEED = sharedPref.getString("rssfeed", "WWWWW");
         new CarregaRSStask().execute(RSS_FEED);
     }
 
@@ -64,7 +135,24 @@ public class MainActivity extends Activity {
 
             //ajuste para usar uma ListView
             //o layout XML a ser utilizado esta em res/layout/itemlista.xml
-            conteudoRSS.setText(s);
+            try {
+//                Usando o parser simples para teste
+//                parsedResponse = ParserRSS.parserSimples(s);
+//                conteudoRSS.setAdapter(new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, parsedResponse));
+
+                //Real deal
+                conteudoRSS.setVisibility(View.VISIBLE);    //Deixar listview visivel quando tudo funcionar direito
+                parsedResponse = ParserRSS.parse(s);
+                conteudoRSS.setAdapter(new CustomAdapter(getApplicationContext(), parsedResponse));
+
+            } catch (XmlPullParserException e) {
+                //Esconder listview do usuario para chamar atencao para o erro
+                Toast.makeText(getApplicationContext(), "Ocorreu algum erro no url", Toast.LENGTH_SHORT).show();
+                conteudoRSS.setVisibility(View.INVISIBLE);
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

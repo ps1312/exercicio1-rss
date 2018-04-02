@@ -10,12 +10,15 @@ public class PreferenciasActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferencias);
+
     }
 
     public static class RssPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            //Usar as preferencias presentes no xml
+            addPreferencesFromResource(R.xml.preferencias);
         }
     }
 }

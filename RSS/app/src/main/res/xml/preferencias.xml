@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <PreferenceCategory android:title="Fonte de feed">
+        <EditTextPreference
+            android:key="rssfeed"
+            android:dialogMessage="Digite o url para o feed"
+            android:dialogTitle="Alterar url"
+            android:negativeButtonText="Cancelar"
+            android:positiveButtonText="Salvar"
+            android:defaultValue="@string/rss_feed_default"
+            android:title="Nome de url" />
+    </PreferenceCategory>
 </PreferenceScreen>

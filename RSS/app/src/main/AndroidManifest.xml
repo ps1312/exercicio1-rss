@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="br.ufpe.cin.if1001.rss">
 
+    <!--Adicionar permissao para acesso da internet-->
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,7 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PreferenciasActivity"></activity>
+        <activity android:name=".PreferenciasActivity" />
+        <activity android:name=".WebviewActivity"></activity>
     </application>
 
 </manifest>
