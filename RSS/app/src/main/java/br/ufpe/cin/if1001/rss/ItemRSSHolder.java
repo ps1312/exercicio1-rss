@@ -7,10 +7,10 @@ public class ItemRSSHolder {
 
     //View holder usado para os items
     TextView titulo;
-    TextView dados;
+    TextView data;
 
     public ItemRSSHolder(View row){
         this.titulo = (TextView) row.findViewById(R.id.item_titulo);
-        this.dados = (TextView) row.findViewById(R.id.item_data);
+        this.data = (TextView) row.findViewById(R.id.item_data);
     }
 }

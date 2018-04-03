@@ -53,7 +53,7 @@ public class CustomAdapter extends BaseAdapter {
         }
 
         holder.titulo.setText(responseItems.get(i).getTitle());
-        holder.dados.setText(responseItems.get(i).getDescription());
+        holder.data.setText(responseItems.get(i).getPubDate());
 
         return v;
     }
